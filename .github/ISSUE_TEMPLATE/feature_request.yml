@@ -1,0 +1,37 @@
+name: Feature request
+description: A new variable, option or behaviour for the egg.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do as a host or server owner, and what stops you today.
+      placeholder: We sell slots per plan and want ... but the egg ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The variable, option or behaviour you would like, and who would set it (host or customer).
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: What you use instead today (EXTRA_ARGS, server.jsonc, a wrapper...).
+
+  - type: dropdown
+    id: role
+    attributes:
+      label: You are
+      options:
+        - Hosting provider
+        - Server owner on a host
+        - Self-hosting on my own panel
+    validations:
+      required: true

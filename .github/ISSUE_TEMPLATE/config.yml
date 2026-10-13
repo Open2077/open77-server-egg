@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open77 documentation
+    url: https://open2077.net/docs/host-a-server
+    about: Hosting, licensing, ports and server configuration.
+  - name: Game server or resource problem
+    url: https://open2077.net/docs
+    about: Problems inside the Open77 server itself (resources, gameplay, Warden) are not egg bugs.

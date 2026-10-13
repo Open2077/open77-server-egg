@@ -1,0 +1,130 @@
+name: Bug report
+description: The egg fails to install, update, start or stop, or a variable does not do what it says.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. This tracker is for the **Pterodactyl egg** only: install, updates,
+        startup, variables and allocations. A problem inside the game server itself (resources,
+        gameplay, Warden) belongs in the [Open77 docs](https://open2077.net/docs) channels.
+
+        **Never paste a license key, database connection string, setup PIN or Warden password.**
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+      placeholder: |
+        After a restart the server stayed in "starting"; the console stops after "Up to date: ...".
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where it fails
+      options:
+        - Install / reinstall
+        - Update at startup
+        - Server start
+        - Stop / restart
+        - Setup wizard
+        - Players cannot connect or download resources
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: |
+        From the server console, every `[open77-egg]` line and the server lines around the failure.
+        For an install problem, the install log from the node: `/var/log/pterodactyl/install/<server-uuid>.log`.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: open77-version
+    attributes:
+      label: Open77 server version
+      description: From the `[open77-egg]` lines, or `package-manifest.json`.
+      placeholder: 2.31.21+op77.138
+    validations:
+      required: true
+
+  - type: dropdown
+    id: channel
+    attributes:
+      label: Channel
+      options:
+        - stable
+        - unstable
+        - pinned version (OP77_VERSION)
+    validations:
+      required: true
+
+  - type: input
+    id: egg-version
+    attributes:
+      label: Egg version
+      description: Commit or date of the `egg-open77.json` you imported (its `exported_at` field).
+      placeholder: 2026-10-14 / 1a2b3c4
+    validations:
+      required: true
+
+  - type: input
+    id: image
+    attributes:
+      label: Docker image
+      placeholder: ghcr.io/ptero-eggs/yolks:dotnet_10
+    validations:
+      required: true
+
+  - type: input
+    id: panel
+    attributes:
+      label: Panel and Wings versions
+      placeholder: Panel 1.11.x, Wings 1.11.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: allocations
+    attributes:
+      label: Allocations and network variables
+      description: The allocations assigned to the server and the values of `PUBLIC_IP`, `DOWNLOAD_PORT`, `WARDEN_PORT`. Mask the IP if you prefer.
+      placeholder: |
+        primary 0.0.0.0:11778, additional 0.0.0.0:11779, 0.0.0.0:11780
+        PUBLIC_IP=203.0.113.x  DOWNLOAD_PORT=11779  WARDEN_PORT=11780
+    validations:
+      required: true
+
+  - type: dropdown
+    id: setup-mode
+    attributes:
+      label: Setup mode
+      options:
+        - wizard
+        - headless
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Other variables you changed (`EXTRA_ARGS`, `AUTO_UPDATE`...), host OS, NAT or proxy in front, steps to reproduce.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed every secret (license key, database string, PIN, passwords) from this report.
+          required: true
+        - label: I read the Allocations section of the README and the server has its download allocation.
+          required: true
