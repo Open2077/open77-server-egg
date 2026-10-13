@@ -69,9 +69,10 @@ DONE="$(jq -r '.config.startup | fromjson | .done' "$ROOT/egg-open77.json")"
 for _ in $(seq 1 90); do docker logs "$NAME" 2>&1 | grep -qF "$DONE" && break; sleep 1; done
 docker logs "$NAME" 2>&1 | grep -qF "$DONE" || { docker logs "$NAME" 2>&1 | tail -40; fail "done line '$DONE' never printed"; }
 pass "ready"
+sleep 5   # let the resources finish starting, as on a live server
 docker kill -s INT "$NAME" >/dev/null
-[[ "$(timeout 30 docker wait "$NAME")" == "0" ]] || fail "SIGINT did not stop the server cleanly"
-docker logs "$NAME" 2>&1 | grep -q 'Server stopped' || fail "no graceful shutdown"
+[[ "$(timeout 30 docker wait "$NAME")" == "0" ]] || { docker logs "$NAME" 2>&1 | tail -30; fail "SIGINT did not stop the server cleanly"; }
+docker logs "$NAME" 2>&1 | grep -q 'Server stopped' || { docker logs "$NAME" 2>&1 | tail -30; fail "no graceful shutdown"; }
 docker rm "$NAME" >/dev/null
 pass "stop"
 
