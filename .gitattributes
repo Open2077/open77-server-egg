@@ -1,0 +1,2 @@
+# The repo stores LF: the scripts run in Linux containers and a CRLF breaks bash.
+* text=auto eol=lf

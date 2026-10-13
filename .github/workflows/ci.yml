@@ -1,0 +1,47 @@
+name: CI
+
+# The egg pulls the newest OPEN//77 build at every start, so nothing here bumps versions.
+# What CI guards: the scripts stay valid, the committed egg matches its sources, and the
+# egg still installs and boots against whatever the CDN publishes today (daily run).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        run: shellcheck -S warning open77-*.sh tests/*.sh
+      - name: Egg is built from the committed scripts
+        run: |
+          python3 build-egg.py
+          git diff --exit-code egg-open77.json \
+            || { echo "::error::egg-open77.json is stale, run python3 build-egg.py and commit it"; exit 1; }
+      - name: Embedded install script parses
+        run: jq -r '.scripts.installation.script' egg-open77.json | bash -n
+
+  e2e:
+    needs: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: [stable, unstable]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install, boot, stop, upgrade, wizard (${{ matrix.channel }})
+        run: tests/e2e.sh ${{ matrix.channel }}

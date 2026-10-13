@@ -1,0 +1,20 @@
+# Local test servers and downloads
+srv/
+*.tar.gz
+__pycache__/
+
+# Local server configuration and credentials
+server.jsonc
+acl.jsonc
+.env
+
+# Claude / AI agent files
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.mcp.json
+
+# Editors and OS
+.idea/
+*.swp
+.DS_Store
