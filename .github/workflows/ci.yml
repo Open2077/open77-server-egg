@@ -22,7 +22,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: ShellCheck
         run: shellcheck -S warning open77-*.sh tests/*.sh
       - name: Egg is built from the committed scripts
@@ -42,6 +42,6 @@ jobs:
       matrix:
         channel: [stable, unstable]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install, boot, stop, upgrade, wizard (${{ matrix.channel }})
         run: tests/e2e.sh ${{ matrix.channel }}
