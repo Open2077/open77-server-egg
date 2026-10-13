@@ -71,8 +71,8 @@ body:
     id: egg-version
     attributes:
       label: Egg version
-      description: Commit or date of the `egg-open77.json` you imported (its `exported_at` field).
-      placeholder: 2026-10-14 / 1a2b3c4
+      description: The release you imported (see Releases), or the `exported_at` field of your `egg-open77.json`.
+      placeholder: v1.0.0
     validations:
       required: true
 
