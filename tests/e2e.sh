@@ -25,6 +25,9 @@ trap cleanup EXIT
 
 pass() { printf '\033[1;32mPASS\033[0m %s\n' "$*"; }
 fail() { printf '\033[1;31mFAIL\033[0m %s\n' "$*"; exit 1; }
+# No grep -q behind a pipe: it exits on the first match, the writer dies of SIGPIPE and
+# pipefail turns the match into a failure. Let grep read everything instead.
+logs_have() { docker logs "$NAME" 2>&1 | grep -F -- "$1" >/dev/null; }
 
 jq -r '.scripts.installation.script' "$ROOT/egg-open77.json" > "$WORK/install.sh"
 
@@ -66,13 +69,13 @@ echo "== start, ready line, graceful ^C"
 runtime -d --name "$NAME" -e VISIBILITY=Private -e STARTUP='bash ./open77-boot.sh' \
     -e EXTRA_ARGS="--set masterServer.enabled=false --set masterServer.devLocalAuth=true" "$YOLK" >/dev/null
 DONE="$(jq -r '.config.startup | fromjson | .done' "$ROOT/egg-open77.json")"
-for _ in $(seq 1 90); do docker logs "$NAME" 2>&1 | grep -qF "$DONE" && break; sleep 1; done
-docker logs "$NAME" 2>&1 | grep -qF "$DONE" || { docker logs "$NAME" 2>&1 | tail -40; fail "done line '$DONE' never printed"; }
+for _ in $(seq 1 90); do logs_have "$DONE" && break; sleep 1; done
+logs_have "$DONE" || { docker logs "$NAME" 2>&1 | tail -40; fail "done line '$DONE' never printed"; }
 pass "ready"
 sleep 5   # let the resources finish starting, as on a live server
 docker kill -s INT "$NAME" >/dev/null
 [[ "$(timeout 30 docker wait "$NAME")" == "0" ]] || { docker logs "$NAME" 2>&1 | tail -30; fail "SIGINT did not stop the server cleanly"; }
-docker logs "$NAME" 2>&1 | grep -q 'Server stopped' || { docker logs "$NAME" 2>&1 | tail -30; fail "no graceful shutdown"; }
+logs_have 'Server stopped' || { docker logs "$NAME" 2>&1 | tail -30; fail "no graceful shutdown"; }
 docker rm "$NAME" >/dev/null
 pass "stop"
 
@@ -90,13 +93,13 @@ install -e SETUP_MODE=headless -e OP77_CHANNEL="$CHANNEL" > /dev/null
 docker run --rm -v "$SRV:/s" "$INSTALLER" bash -c 'echo x >> /s/Open77.Server.deps.json'
 runtime --rm --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' | tee "$WORK/repair.log"
 grep -q 'repairing' "$WORK/repair.log" || fail "damaged runtime file not detected"
-runtime --rm --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' | grep -q 'Up to date' \
+runtime --rm --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' | grep 'Up to date' >/dev/null \
     || fail "repair did not restore the files"
 pass "upgrade safety"
 
 echo "== CDN unreachable: installed build still starts"
 runtime --rm --network none --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' \
-    | grep -q 'CDN unreachable' || fail "no offline fallback"
+    | grep 'CDN unreachable' >/dev/null || fail "no offline fallback"
 pass "offline"
 
 echo "== wizard mode on a fresh install"
@@ -106,7 +109,7 @@ install -e SETUP_MODE=wizard -e OP77_CHANNEL="$CHANNEL" > /dev/null
 runtime -d --name "$NAME" -p 127.0.0.1:27017:27017 -e WARDEN_PORT=27017 -e STARTUP='bash ./open77-boot.sh' "$YOLK" >/dev/null
 for _ in $(seq 1 60); do curl -sf -o /dev/null http://127.0.0.1:27017/ && break; sleep 1; done
 curl -sf -o /dev/null http://127.0.0.1:27017/ || { docker logs "$NAME" 2>&1 | tail -30; fail "setup wizard not reachable"; }
-docker logs "$NAME" 2>&1 | grep -q 'Setup PIN' || fail "no setup PIN in the console"
+logs_have 'Setup PIN' || fail "no setup PIN in the console"
 pass "wizard"
 
 printf '\n\033[1;32mAll egg checks passed (%s)\033[0m\n' "$CHANNEL"
