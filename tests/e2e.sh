@@ -90,7 +90,8 @@ install -e SETUP_MODE=headless -e OP77_CHANNEL="$CHANNEL" > /dev/null
 [[ "$(cat "$SRV/resources/my_res/data/x.json")" == keep ]] || fail "resource data lost"
 [[ "$(tail -n1 "$SRV/server.jsonc")" == "// mine" ]] || fail "server.jsonc overwritten"
 [[ ! -e "$SRV/resources/system/open77_admin/STALE.lua" ]] || fail "dropped file kept"
-docker run --rm -v "$SRV:/s" "$INSTALLER" bash -c 'echo x >> /s/Open77.Server.deps.json'
+# LICENSE: a shipped runtime file outside resources/ in every package (.NET or Rust server).
+docker run --rm -v "$SRV:/s" "$INSTALLER" bash -c 'echo x >> /s/LICENSE'
 runtime --rm --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' | tee "$WORK/repair.log"
 grep -q 'repairing' "$WORK/repair.log" || fail "damaged runtime file not detected"
 runtime --rm --entrypoint bash "$YOLK" -c 'cd /home/container && bash ./open77-update.sh' | grep 'Up to date' >/dev/null \

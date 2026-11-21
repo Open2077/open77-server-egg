@@ -55,18 +55,19 @@ egg = {
     "description": (
         "OPEN//77 dedicated server (Cyberpunk 2077 multiplayer). Pulls the latest build from the "
         "official CDN (cdn.open77.dev) on every start, checks its SHA-256, and keeps config, "
-        "identities and resource data. Stable or unstable channel, or a pinned version."
+        "identities and resource data. Stable or unstable channel, or a pinned version. Runs both "
+        "the native Rust server and the earlier .NET server."
     ),
     "features": None,
     "docker_images": {
-        "Debian + .NET 10 (recommended)": "ghcr.io/ptero-eggs/yolks:dotnet_10",
-        "Debian (ptero-eggs)": "ghcr.io/ptero-eggs/yolks:debian",
+        "Debian + .NET 10 (recommended, any server)": "ghcr.io/ptero-eggs/yolks:dotnet_10",
+        "Debian (Rust server builds only)": "ghcr.io/ptero-eggs/yolks:debian",
     },
     "file_denylist": [],
     "startup": "bash ./open77-boot.sh",
     "config": {
         "files": "{}",
-        "startup": json.dumps({"done": "OPEN//77 server listening on UDP"}),
+        "startup": json.dumps({"done": " listening on UDP "}),
         "logs": "{}",
         "stop": "^C",
     },
