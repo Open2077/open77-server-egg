@@ -38,7 +38,13 @@ when Open77 ships a release.
 1. Download [`egg-open77.json`](https://raw.githubusercontent.com/Open2077/open77-server-egg/main/egg-open77.json),
    then **Admin → Nests → Import Egg**.
 2. Create the server with the **Debian + .NET 10** image (`ghcr.io/ptero-eggs/yolks:dotnet_10`).
-   The legacy `pterodactyl/yolks:debian` image ships OpenSSL 1.1 and can't run the server.
+   It runs every Open77 server build: the native **Rust server** (Unstable since `op77.252`, and
+   Stable from its first Rust release) and the earlier .NET server. A Rust build needs no .NET, so
+   **Debian** (`ghcr.io/ptero-eggs/yolks:debian`) also works once your channel ships Rust; keep the
+   .NET image while you run or pin a .NET build. The server needs glibc 2.34 or newer (Debian 12+,
+   Ubuntu 22.04+; both images above are Debian 12); on an older image the egg stops with a message
+   naming the glibc it needs. The
+   legacy `pterodactyl/yolks:debian` image ships OpenSSL 1.1 and can't run the .NET server.
 3. Assign the allocations above and fill `DOWNLOAD_PORT`, `WARDEN_PORT` and, if needed, `PUBLIC_IP`.
 4. Size it: the install takes about 170 MB and peaks around 420 MB during an update (archive
    plus staging), so give it **1 GB of disk**. An idle Freeroam server uses about 150 MB of RAM.
@@ -56,12 +62,13 @@ it, the server doesn't appear on the master list.
 A healthy start logs:
 
 ```text
-[open77-egg] Up to date: 2.31.21+op77.138 (stable)
+[open77-egg] Up to date: 2.50.0-unstable+op77.257 (unstable)
 [open77-egg] Starting: ./Open77.Server --no-setup --config server.jsonc --log-level info ... --port 11778 ...
-[INF] OPEN//77 server listening on UDP ...:11778 (players=32, tick=30, snapshots=20).
+[INF] My Server listening on UDP 0.0.0.0:11778 (players=32, tick=30, snapshots=20).
 ```
 
-Pterodactyl marks the server online on that last line. **Stop** sends `^C`, the server's graceful
+Pterodactyl marks the server online on that last line, whatever the server name (the egg waits
+for ` listening on UDP `). **Stop** sends `^C`, the server's graceful
 shutdown, which stops resources cleanly. Use **Kill** only as a last resort.
 
 ## How an update arrives

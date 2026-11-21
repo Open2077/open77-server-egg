@@ -8,6 +8,17 @@ warn() { printf '\033[1;33m[open77-egg]\033[0m %s\n' "$*"; }
 bash ./open77-update.sh || warn "Update step failed, trying to start the installed build"
 [[ -x ./Open77.Server ]] || { warn "No server installed. Reinstall the server from the panel."; exit 1; }
 
+# The Rust server is a native binary linked against the system C library. A host image older than
+# the build needs fails with a cryptic loader error; say what to change instead.
+need_glibc="$(cat ./Open77.Server ./*.so 2>/dev/null | grep -aoE 'GLIBC_2\.[0-9]+' | sort -V | tail -n1 | cut -d_ -f2)"
+have_glibc="$(getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $2}')"
+oldest="$(printf '%s\n%s\n' "$need_glibc" "$have_glibc" | sort -V | head -n1)"
+if [[ -n "$need_glibc" && -n "$have_glibc" && "$oldest" != "$need_glibc" ]]; then
+    warn "This server build needs glibc ${need_glibc}, the container image has ${have_glibc}."
+    warn "Switch the server to a newer Docker image in the panel (Startup > Docker Image), or pin an older OP77_VERSION."
+    exit 1
+fi
+
 GAME_PORT="${SERVER_PORT:-11778}"
 DL_PORT="${DOWNLOAD_PORT:-$((GAME_PORT + 1))}"
 PUBLIC="${PUBLIC_IP:-}"
